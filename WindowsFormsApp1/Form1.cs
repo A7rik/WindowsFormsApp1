@@ -126,5 +126,10 @@ namespace WindowsFormsApp1
                 clearForm();
             }
         }
+
+        private void txt_firstname_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

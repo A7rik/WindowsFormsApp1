@@ -7,16 +7,16 @@
 <form id="contactForm">
     <div class="row">
         <div class="col-md-4">
-            <label for="firstname">Firstname</label>
+            <label for="firstname">First name</label>
             <input class="form-control" type="text" id="firstname" value="" />
         </div>
         <div class="col-md-4">
-            <label for="lastname">Lastname</label>
+            <label for="lastname">Last name</label>
             <input class="form-control" type="text" id="lastname" value="" />
         </div>
         <div class="col-md-4">
             <label for="phoneNumber">Phone Number</label>
-            <input class="form-control" type="text" id="phoneNumber" value="" />
+            <input class="form-control" type="number" id="phoneNumber" value="" />
         </div>
     </div>
     <input hidden id="hiddenId" />
@@ -27,10 +27,10 @@
 <table class="table table-response ">
     <thead>
         <tr>
-            <th>firstname</th>
-            <th>lastname</th>
-            <th>phone number</th>
-            <th>actions</th>
+            <th>ّFirst name</th>
+            <th>Last name</th>
+            <th>Phone number</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody id="tbl_contactBody" name="tbl_contactBody" class="customTabel">
@@ -59,13 +59,13 @@
                 html += '<td>' + mehdi[i].PhoneNumber + '</td>'
                 html += '<td>';
                 html += '<div class="btn-group">';
-                html += '<button class="btn btn-primary" onclick="GetContactById(' + "'" + mehdi[i].Id + "'" +')"> edit</button>';
-                html += '<button class="btn btn-danger" onclick="Delete(' + "'" + mehdi[i].Id + "'" +')"> delete</button>';
+                html += '<button class="btn btn-primary" onclick="GetContactById(' + "'" + mehdi[i].Id + "'" + ')"> edit</button>';
+                html += '<button class="btn btn-danger" onclick="Delete(' + "'" + mehdi[i].Id + "'" + ')"> delete</button>';
                 html += '</div>';
                 html += '</td>';
 
 
-                + mehdi[i].PhoneNumber + '</td>'
+                //+ mehdi[i].PhoneNumber + '</td>'
                 html += '</tr>'
             }
 
@@ -89,20 +89,43 @@
     }
 
 
+    function validateModel(model) {
+        const phoneRegex = /^09\d{9}$/;
+        const nameRegex = /^[\u0600-\u06FF\s]+$/;
+        if (!nameRegex.test(model.Firstname)) {
+            console.log("Invalid first name");
+            window.alert("Invalid first name");
+            return false;
+        }
+        else if (!nameRegex.test(model.Lastname)) {
+            console.log("Invalid last name");
+            window.alert("Invalid last name");
+            return false;
+        }
+        else if (!phoneRegex.test(model.PhoneNumber)) {
+            console.log("Invalid phone number");
+            window.alert("Invalid phone number");
+            return false;
+        }
+        return true;
+    }
 
     function Save() {
         var url = '/PhoneBook/Save'
-      
+
         var model = {};
         model.Firstname = $('#firstname').val();
         model.Lastname = $('#lastname').val();
         model.PhoneNumber = $('#phoneNumber').val();
         model.Id = $('#hiddenId').val();
-        $.post(url, {model:model},function (result) {
-            debugger
-            GetContacts();
-            ClearForm();
-        })
+        if (validateModel(model)
+        ) {
+            $.post(url, { model: model }, function (result) {
+                debugger
+                GetContacts();
+                ClearForm();
+            })
+        }
     }
 
 

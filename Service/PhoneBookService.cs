@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+
 
 namespace Service
 {
@@ -56,26 +58,52 @@ namespace Service
         public bool SaveContact(Contact model)
         {
             var contacts = GetContacts();
-
-
-            if (model.Id == Guid.Empty)
+            if (ValidateModel(model))
             {
-                model.Id = Guid.NewGuid();
-                contacts.Add(model);
-            }
-            else
-            {
-                var contactForEdit = GetContactById(model.Id.ToString());
-                if (contactForEdit!=null)
+
+                if (model.Id == Guid.Empty)
                 {
-                    contacts.Remove(contactForEdit);
+                    model.Id = Guid.NewGuid();
                     contacts.Add(model);
                 }
-              
+                else
+                {
+                    var contactForEdit = contacts.FirstOrDefault(c => c.Id == model.Id);
+                    if (contactForEdit != null)
+                    {
+                        contacts.Remove(contactForEdit);
+                        contacts.Add(model);
+                    }
+
+                }
             }
+
 
 
             return _repo.SaveContact(contacts);
         }
+        public bool ValidateModel(Contact model)
+        {
+            var phoneRegex = new Regex(@"^09\d{9}$");
+            var nameRegex = new Regex(@"^[\u0600-\u06FF\s]+$");
+
+            if (!nameRegex.IsMatch(model.Firstname))
+            {
+                return false;
+            }
+
+            if (!nameRegex.IsMatch(model.Lastname))
+            {
+                return false;
+            }
+
+            if (!phoneRegex.IsMatch(model.PhoneNumber))
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }
+
