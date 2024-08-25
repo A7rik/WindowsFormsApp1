@@ -19,15 +19,15 @@
             <input class="form-control" type="number" id="phoneNumber" value="" />
         </div>
     </div>
-    <input hidden id="hiddenId" />
+    <input type="hidden" id="hiddenId" />
 </form>
 <div class="mt-5">
     <button class="btn btn-success" onclick="Save()">Save</button>
 </div>
-<table class="table table-response ">
+<table class="table table-responsive">
     <thead>
         <tr>
-            <th>ّFirst name</th>
+            <th>First name</th>
             <th>Last name</th>
             <th>Phone number</th>
             <th>Actions</th>
@@ -40,103 +40,91 @@
 <script>
 
     GetContacts();
+
     function ClearForm() {
         document.getElementById('contactForm').reset();
+        $('#hiddenId').val('');
     }
 
-
     function GetContacts() {
+        var url = '/PhoneBook/GetContacts';
 
-        var url = '/PhoneBook/GetContacts'
-
-        $.get(url, function (mehdi) {
+        $.get(url, function (contacts) {
             var html = '';
 
-            for (var i = 0; i < mehdi.length; i++) {
-                html += '<tr>'
-                html += '<td>' + mehdi[i].Firstname + '</td>'
-                html += '<td>' + mehdi[i].Lastname + '</td>'
-                html += '<td>' + mehdi[i].PhoneNumber + '</td>'
+            for (var i = 0; i < contacts.length; i++) {
+                html += '<tr>';
+                html += '<td>' + contacts[i].Firstname + '</td>';
+                html += '<td>' + contacts[i].Lastname + '</td>';
+                html += '<td>' + contacts[i].PhoneNumber + '</td>';
                 html += '<td>';
                 html += '<div class="btn-group">';
-                html += '<button class="btn btn-primary" onclick="GetContactById(' + "'" + mehdi[i].Id + "'" + ')"> edit</button>';
-                html += '<button class="btn btn-danger" onclick="Delete(' + "'" + mehdi[i].Id + "'" + ')"> delete</button>';
+                html += '<button class="btn btn-primary" onclick="GetContactById(' + contacts[i].Id + ')">Edit</button>';
+                html += '<button class="btn btn-danger" onclick="Delete(' + contacts[i].Id + ')">Delete</button>';
                 html += '</div>';
                 html += '</td>';
-
-
-                //+ mehdi[i].PhoneNumber + '</td>'
-                html += '</tr>'
+                html += '</tr>';
             }
 
             $('#tbl_contactBody').html(html);
-
-        })
+        });
     }
 
-    function GetContactById(Id) {
-        debugger;
-        var url = '/PhoneBook/GetContactById/' + Id;
+    function GetContactById(id) {
+        var url = '/PhoneBook/GetContactById?id=' + id;
 
         $.get(url, function (result) {
-            $('#firstname').val(result.Firstname)
-            $('#lastname').val(result.Lastname)
-            $('#phoneNumber').val(result.PhoneNumber)
-            $('#hiddenId').val(result.Id)
-
-
-        })
+            $('#firstname').val(result.Firstname);
+            $('#lastname').val(result.Lastname);
+            $('#phoneNumber').val(result.PhoneNumber);
+            $('#hiddenId').val(result.Id);
+        });
     }
 
-
     function validateModel(model) {
-        const phoneRegex = /^09\d{9}$/;
-        const nameRegex = /^[\u0600-\u06FF\s]+$/;
+        //const phoneRegex = /^09\d{9}$/;
+        const nameRegex = /^[a-zA-Z\s]+$/;
+
         if (!nameRegex.test(model.Firstname)) {
-            console.log("Invalid first name");
-            window.alert("Invalid first name");
+            alert("Invalid first name");
             return false;
         }
-        else if (!nameRegex.test(model.Lastname)) {
-            console.log("Invalid last name");
-            window.alert("Invalid last name");
+        if (!nameRegex.test(model.Lastname)) {
+            alert("Invalid last name");
             return false;
         }
-        else if (!phoneRegex.test(model.PhoneNumber)) {
-            console.log("Invalid phone number");
-            window.alert("Invalid phone number");
-            return false;
-        }
+        //if (!phoneRegex.test(model.PhoneNumber)) {
+        //    alert("Invalid phone number");
+        //    return false;
+        //}
         return true;
     }
 
     function Save() {
-        var url = '/PhoneBook/Save'
+        var url = '/PhoneBook/Save';
 
-        var model = {};
-        model.Firstname = $('#firstname').val();
-        model.Lastname = $('#lastname').val();
-        model.PhoneNumber = $('#phoneNumber').val();
-        model.Id = $('#hiddenId').val();
-        if (validateModel(model)
-        ) {
-            $.post(url, { model: model }, function (result) {
-                debugger
+        var model = {
+            Firstname: $('#firstname').val(),
+            Lastname: $('#lastname').val(),
+            PhoneNumber: parseInt($('#phoneNumber').val(), 10),
+            Id: parseInt($('#hiddenId').val(), 10) || 0
+        };
+
+        if (validateModel(model)) {
+            $.post(url, model, function (result) {
+                debugger;
                 GetContacts();
                 ClearForm();
-            })
+            });
         }
     }
 
-
     function Delete(id) {
-        var url = '/PhoneBook/DeleteById/' + id
+        var url = '/PhoneBook/DeleteById?id=' + id;
 
-        $.get(url, function (result) {
+        $.post(url, function (result) {
             GetContacts();
-
-        })
+        });
     }
-
 
 </script>

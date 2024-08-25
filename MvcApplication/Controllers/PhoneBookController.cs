@@ -1,21 +1,16 @@
 ﻿using Models;
-
 using Service;
-
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace MvcApplication.Controllers
 {
     public class PhoneBookController : Controller
     {
-        PhoneBookService _service;
+        private readonly PhoneBookService _service;
+
         public PhoneBookController()
         {
-
             _service = new PhoneBookService();
         }
 
@@ -25,21 +20,21 @@ namespace MvcApplication.Controllers
             return Json(contacts, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetContactById(string Id)
+        public ActionResult GetContactById(int id)
         {
-            Contact contacts = _service.GetContactById(Id);
-            return Json(contacts, JsonRequestBehavior.AllowGet);
+            Contact contact = _service.GetContactById(id);
+            return Json(contact, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult Save(Contact model)
         {
-            var result = _service.SaveContact(model);
+            bool result = _service.SaveContact(model);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult DeleteById(string Id)
+        public ActionResult DeleteById(int id)
         {
-            var result = _service.DeleteContact(Id);
+            bool result = _service.DeleteContact(id);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
     }

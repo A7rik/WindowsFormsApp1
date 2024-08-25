@@ -1,53 +1,36 @@
 ﻿using Models;
-
 using Repository;
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
-
 
 namespace Service
 {
     public class PhoneBookService
     {
-        PhoneBookRespository _repo;
+        private readonly PhoneBookRepository _repo;
+
         public PhoneBookService()
         {
-            _repo = new PhoneBookRespository();
+            _repo = new PhoneBookRepository();
         }
 
-        public bool DeleteContact(string Id)
+        public bool DeleteContact(int id)
         {
             try
             {
-                var contacts = _repo.GetContacts();
-                var contactForDelete = contacts.FirstOrDefault(x => x.Id.ToString() == Id);
-                contacts.Remove(contactForDelete);
-                _repo.SaveContact(contacts);
-                return true;
+                return _repo.DeleteContact(id);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return false;
             }
         }
 
-        public Contact GetContactById(string id)
+        public Contact GetContactById(int id)
         {
-
-            var contacts = GetContacts();
-            var contact = contacts.FirstOrDefault(x => x.Id.ToString() == id.ToString());
-            return contact;
-
-            //if (contact == null)
-            //{
-            //    return null;
-            //}
-            //return contact;
+            return _repo.GetContactById(id);
         }
 
         public List<Contact> GetContacts()
@@ -57,35 +40,17 @@ namespace Service
 
         public bool SaveContact(Contact model)
         {
-            var contacts = GetContacts();
             if (ValidateModel(model))
             {
-
-                if (model.Id == Guid.Empty)
-                {
-                    model.Id = Guid.NewGuid();
-                    contacts.Add(model);
-                }
-                else
-                {
-                    var contactForEdit = contacts.FirstOrDefault(c => c.Id == model.Id);
-                    if (contactForEdit != null)
-                    {
-                        contacts.Remove(contactForEdit);
-                        contacts.Add(model);
-                    }
-
-                }
+                return _repo.SaveContact(model);
             }
-
-
-
-            return _repo.SaveContact(contacts);
+            return false;
         }
+
         public bool ValidateModel(Contact model)
         {
-            var phoneRegex = new Regex(@"^09\d{9}$");
-            var nameRegex = new Regex(@"^[\u0600-\u06FF\s]+$");
+            //var phoneRegex = new Regex(@"^09\d{9}$");
+            var nameRegex = new Regex(@"^[a-zA-Z\s]+$");
 
             if (!nameRegex.IsMatch(model.Firstname))
             {
@@ -97,13 +62,12 @@ namespace Service
                 return false;
             }
 
-            if (!phoneRegex.IsMatch(model.PhoneNumber))
-            {
-                return false;
-            }
+            //if (!phoneRegex.IsMatch(model.PhoneNumber.ToString()))
+            //{
+            //    return false;
+            //}
 
             return true;
         }
     }
 }
-
