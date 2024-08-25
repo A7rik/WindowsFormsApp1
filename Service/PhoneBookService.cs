@@ -1,19 +1,21 @@
 ﻿using Models;
+using NLog;
 using Repository;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Service
 {
-    public class PhoneBookService
+    public class PhoneBookService : IPhoneBookService
     {
-        private readonly PhoneBookRepository _repo;
+        private readonly IPhoneBookRepository _repo;
+        private readonly ILogger _logger;
 
-        public PhoneBookService()
+        public PhoneBookService(IPhoneBookRepository repo, ILogger logger)
         {
-            _repo = new PhoneBookRepository();
+            _repo = repo;
+            _logger = logger;
         }
 
         public bool DeleteContact(int id)
@@ -22,50 +24,72 @@ namespace Service
             {
                 return _repo.DeleteContact(id);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.Error(ex, "An error occurred while deleting contact with ID {Id}", id);
                 return false;
             }
         }
 
         public Contact GetContactById(int id)
         {
-            return _repo.GetContactById(id);
+            try
+            {
+                return _repo.GetContactById(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "An error occurred while retrieving contact with ID {Id}", id);
+                return null;
+            }
         }
 
         public List<Contact> GetContacts()
         {
-            return _repo.GetContacts();
+            try
+            {
+                return _repo.GetContacts();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "An error occurred while retrieving contacts.");
+                return new List<Contact>();
+            }
         }
 
         public bool SaveContact(Contact model)
         {
             if (ValidateModel(model))
             {
-                return _repo.SaveContact(model);
+                try
+                {
+                    return _repo.SaveContact(model);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "An error occurred while saving contact.");
+                    return false;
+                }
             }
+            _logger.Warn("Validation failed for contact: {@Contact}", model);
             return false;
         }
 
         public bool ValidateModel(Contact model)
         {
-            //var phoneRegex = new Regex(@"^09\d{9}$");
             var nameRegex = new Regex(@"^[a-zA-Z\s]+$");
 
             if (!nameRegex.IsMatch(model.Firstname))
             {
+                _logger.Warn("Validation failed: First name is invalid for contact: {@Contact}", model);
                 return false;
             }
 
             if (!nameRegex.IsMatch(model.Lastname))
             {
+                _logger.Warn("Validation failed: Last name is invalid for contact: {@Contact}", model);
                 return false;
             }
-
-            //if (!phoneRegex.IsMatch(model.PhoneNumber.ToString()))
-            //{
-            //    return false;
-            //}
 
             return true;
         }

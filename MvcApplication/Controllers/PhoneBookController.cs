@@ -1,6 +1,9 @@
 ﻿using Models;
+using NLog;
+using Repository;
 using Service;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Web.Mvc;
 
 namespace MvcApplication.Controllers
@@ -11,7 +14,10 @@ namespace MvcApplication.Controllers
 
         public PhoneBookController()
         {
-            _service = new PhoneBookService();
+            var connectionString = ConfigurationManager.ConnectionStrings["PhoneBookDb"].ConnectionString;
+            var logger = LogManager.GetCurrentClassLogger();
+            var repository = new PhoneBookRepository(connectionString, logger);
+            _service = new PhoneBookService(repository, logger);
         }
 
         public ActionResult GetContacts()
